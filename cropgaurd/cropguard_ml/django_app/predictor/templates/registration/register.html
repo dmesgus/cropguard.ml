@@ -1,0 +1,41 @@
+{# Inherit the base template layout #}
+{% extends "predictor/base.html" %}
+{# Set the browser tab title #}
+{% block title %}Create account · CropGuard{% endblock %}
+
+{% block content %}
+{# Auth card: centered container for the registration form #}
+<section class="auth-card">
+    <h1>Create an account</h1>
+    <p class="muted">Register to start logging soil and climate samples.</p>
+    {# Registration form: submits POST to our custom register view #}
+    {# novalidate: Django handles validation server-side #}
+    <form method="post" novalidate>
+        {% csrf_token %}  {# CSRF protection token #}
+        {# Sheet layout: each form field as a labeled row #}
+        <div class="sheet">
+            {% for field in form %}
+                <div class="sheet-row">
+                    {# Label linked to input for accessibility #}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {# Render the input (username field, password fields, etc.) #}
+                    {{ field }}
+                    {# Show Django's help_text (e.g., password requirements) if present #}
+                    {# |safe renders HTML tags in the help text (e.g., <ul> lists) #}
+                    {% if field.help_text %}
+                        <div class="field-help">{{ field.help_text|safe }}</div>
+                    {% endif %}
+                    {# Display validation errors for this field #}
+                    {% for error in field.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        {# Submit button #}
+        <button type="submit" class="btn-primary">Create account</button>
+    </form>
+    {# Switch link: offers to log in if user already has an account #}
+    <p class="muted auth-switch">Already registered? <a href="{% url 'login' %}" class="link">Log in</a></p>
+</section>
+{% endblock %}

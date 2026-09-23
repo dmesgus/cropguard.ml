@@ -1,0 +1,65 @@
+{# Inherit the base template layout #}
+{% extends "predictor/base.html" %}
+{# Set the browser tab title #}
+{% block title %}Field report · CropGuard{% endblock %}
+
+{% block content %}
+{# "Slip" = styled card resembling a field receipt / lab report #}
+<div class="slip">
+    {# Header row: "Field report" title + record number (zero-padded to 4 digits, e.g., "No. 0042") #}
+    <div class="slip-head">
+        <h2>Field report</h2>
+        <span class="slip-number">No. {{ record.id|stringformat:"04d" }}</span>
+    </div>
+
+    <div class="slip-body">
+        {# ===== Stamp row: circular risk badge + crop/confidence metadata ===== #}
+        <div class="stamp-row">
+            {# Circular stamp: shows risk level (Low/Medium/High) with color coding #}
+            {# CSS class stamp--high / stamp--medium / stamp--low applies the right color #}
+            <div class="stamp stamp--{{ record.disease_risk|lower }}">
+                <span class="stamp-label">{{ record.disease_risk }}</span>
+                <span class="stamp-sub">risk</span>
+            </div>
+            {# Metadata items next to the stamp: crop name and confidence percentage #}
+            <div class="stamp-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Crop</span>
+                    {# Shows recommended crop, or selected crop if no recommendation was made #}
+                    <span class="meta-value">{{ record.recommended_crop|default:record.selected_crop|title }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Confidence</span>
+                    {# Model confidence displayed as percentage with monospace font #}
+                    <span class="meta-value mono">{{ record.risk_confidence }}%</span>
+                </div>
+            </div>
+        </div>
+
+        {# ===== Advisory box: actionable farming advice ===== #}
+        {# Gold left border highlights this as important guidance #}
+        <div class="advisory">
+            <h3>Advisory</h3>
+            <p>{{ advice }}</p>
+        </div>
+
+        {# ===== Reading details: shows all input values the user submitted ===== #}
+        <div class="reading">
+            <h3>Reading</h3>
+            {# Grid of all 7 input parameters with their values and units #}
+            <div class="reading-grid">
+                <div class="reading-item"><span>Nitrogen (N)</span><span class="mono">{{ record.nitrogen }} kg/ha</span></div>
+                <div class="reading-item"><span>Phosphorus (P)</span><span class="mono">{{ record.phosphorus }} kg/ha</span></div>
+                <div class="reading-item"><span>Potassium (K)</span><span class="mono">{{ record.potassium }} kg/ha</span></div>
+                <div class="reading-item"><span>Temperature</span><span class="mono">{{ record.temperature }} \u00b0C</span></div>
+                <div class="reading-item"><span>Humidity</span><span class="mono">{{ record.humidity }} %</span></div>
+                <div class="reading-item"><span>Soil pH</span><span class="mono">{{ record.ph }}</span></div>
+                <div class="reading-item"><span>Rainfall</span><span class="mono">{{ record.rainfall }} mm</span></div>
+            </div>
+        </div>
+
+        {# Button to return to dashboard and submit another prediction #}
+        <a href="{% url 'dashboard' %}" class="btn-primary">Log another sample</a>
+    </div>
+</div>
+{% endblock %}

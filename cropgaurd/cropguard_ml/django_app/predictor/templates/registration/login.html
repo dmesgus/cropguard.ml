@@ -1,0 +1,36 @@
+{# Inherit the base template layout #}
+{% extends "predictor/base.html" %}
+{# Set the browser tab title #}
+{% block title %}Log in · CropGuard{% endblock %}
+
+{% block content %}
+{# Auth card: centered container for login form, styled with panel background #}
+<section class="auth-card">
+    <h1>Log in</h1>
+    <p class="muted">Enter your account details to continue.</p>
+    {# Login form: submits POST to Django's built-in auth login view #}
+    {# novalidate: Django handles validation, not the browser #}
+    <form method="post" novalidate>
+        {% csrf_token %}  {# CSRF protection token #}
+        {# Sheet layout: each form field rendered as a label-input row #}
+        <div class="sheet">
+            {% for field in form %}
+                <div class="sheet-row">
+                    {# Field label linked to input for accessibility #}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {# Render the input field (text input for username, password input for password) #}
+                    {{ field }}
+                    {# Display any validation errors for this field #}
+                    {% for error in field.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        {# Submit button: styled as gold primary button #}
+        <button type="submit" class="btn-primary">Log in</button>
+    </form>
+    {# Switch link: offers to create an account if user doesn't have one #}
+    <p class="muted auth-switch">No account yet? <a href="{% url 'register' %}" class="link">Create one</a></p>
+</section>
+{% endblock %}

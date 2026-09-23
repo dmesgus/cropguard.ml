@@ -1,0 +1,92 @@
+{# Inherit all HTML structure from the base template (navbar, footer, etc.) #}
+{% extends "predictor/base.html" %}
+{# Override the page title block to show "Dashboard · CropGuard" in the browser tab #}
+{% block title %}Dashboard · CropGuard{% endblock %}
+
+{# Override the content block to define the dashboard page content #}
+{% block content %}
+{# ===== Hero section: headline + last reading ticket ===== #}
+<section class="hero">
+    <div class="hero-text">
+        {# Main headline introducing the app's purpose #}
+        <h1>Know your risk<br>before it spreads.</h1>
+        {# Subtitle explaining what the form does #}
+        <p>Log today's soil and climate readings. CropGuard recommends a crop, if you haven't picked one,
+           and predicts its disease risk from the numbers you enter.</p>
+    </div>
+
+    {# "Ticket" card showing the most recent prediction (styled like a field receipt) #}
+    <div class="hero-ticket">
+        {% for r in recent %}
+            {# Only show the first (most recent) prediction #}
+            {% if forloop.first %}
+                <span class="ticket-eyebrow">Last reading</span>
+                {# Show the recommended crop, or the user's selected crop if no recommendation was made #}
+                <span class="ticket-crop">{{ r.recommended_crop|default:r.selected_crop|title }}</span>
+                {# Risk badge with color class (badge-low = green, badge-medium = amber, badge-high = red) #}
+                <span class="ticket-risk badge badge-{{ r.disease_risk|lower }}">{{ r.disease_risk }} risk</span>
+                {# Timestamp formatted as "05 Sep, 14:30" #}
+                <span class="ticket-time">{{ r.created_at|date:"d M, H:i" }}</span>
+            {% endif %}
+        {% empty %}
+            {# No predictions yet: show placeholder text #}
+            <span class="ticket-eyebrow">No readings yet</span>
+            <span class="ticket-crop">Your first sample</span>
+            <span class="ticket-time">will appear here</span>
+        {% endfor %}
+    </div>
+</section>
+
+{# ===== Two-column layout: form on left, recent samples on right ===== #}
+<div class="ledger-grid">
+    {# --- Left column: new prediction form --- #}
+    <div class="panel">
+        <h2>New sample</h2>
+        {# HTML form: submits data as POST to the same URL (dashboard) #}
+        {# novalidate disables browser validation since Django handles it server-side #}
+        <form method="post" novalidate>
+            {% csrf_token %}  {# CSRF protection token #}
+            {# "Sheet" layout: each form field rendered as a label-input row with dashed borders #}
+            <div class="sheet">
+                {% for field in form %}
+                    <div class="sheet-row">
+                        {# Label: uses field.id_for_label to link to the input for accessibility #}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {# Render the form input (number input or select dropdown) #}
+                        {{ field }}
+                        {# Display validation errors inline if the field has any #}
+                        {% if field.errors %}
+                            <div class="field-error">{{ field.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            {# Submit button: styled as gold primary button #}
+            <button type="submit" class="btn-primary">Predict risk</button>
+        </form>
+    </div>
+
+    {# --- Right column: recent predictions list --- #}
+    <div class="panel">
+        <h2>Recent samples</h2>
+        {% if recent %}
+            {# Display up to 5 most recent predictions as a styled list #}
+            <ul class="log-list">
+                {% for r in recent %}
+                    {# Each entry has a colored left border based on risk level #}
+                    <li class="log-entry log-entry--{{ r.disease_risk|lower }}">
+                        <span class="log-crop">{{ r.recommended_crop|default:r.selected_crop|title }}</span>
+                        <span class="badge badge-{{ r.disease_risk|lower }}">{{ r.disease_risk }}</span>
+                        <span class="log-time">{{ r.created_at|date:"d M, H:i" }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+            {# Link to the full history page #}
+            <a href="{% url 'history' %}" class="link">See the full log</a>
+        {% else %}
+            {# No predictions yet: show placeholder message #}
+            <p class="muted">No samples yet — your first reading will show up here.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
