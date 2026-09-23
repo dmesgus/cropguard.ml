@@ -1,0 +1,76 @@
+{# Load the Django static template tag library so we can use {% static %} to reference CSS/JS files #}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {# Responsive viewport: ensures mobile devices scale the page correctly #}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# Page title: child templates override this with {% block title %} #}
+    <title>{% block title %}CropGuard{% endblock %}</title>
+    {# Google Fonts: preload hints for faster font loading #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    {# Import three Google Fonts: Fraunces (serif display), JetBrains Mono (monospace), Inter (sans-serif body) #}
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    {# Link to our custom stylesheet (Django's {% static %} resolves to /static/css/style.css) #}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    {# Accessibility skip link: hidden by default, appears on keyboard focus (Tab key) #}
+    {# Allows screen reader users and keyboard-only users to skip the nav and jump to main content #}
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    {# ===== Navigation bar ===== #}
+    <nav class="navbar">
+        <div class="nav-inner">
+            {# Brand logo + name: links to the dashboard (home page) #}
+            <a href="{% url 'dashboard' %}" class="brand">
+                {# Inline SVG icon: a simple leaf/plant shape using two overlapping paths #}
+                <svg class="brand-mark" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 21c0-6.5 3.5-11 9-13-1 7-4.5 11.5-9 13Z" fill="var(--gold)"/>
+                    <path d="M12 21c0-7-3.8-12-9-14 1 7.5 4.8 12.5 9 14Z" fill="var(--leaf)"/>
+                </svg>
+                <span class="brand-word">CropGuard</span>
+            </a>
+
+            {# Navigation links: different content for logged-in vs anonymous users #}
+            <div class="nav-links">
+                {% if user.is_authenticated %}
+                    {# Authenticated user sees: Dashboard, Sample log, username, and Log out button #}
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'history' %}">Sample log</a>
+                    <span class="nav-user">{{ user.username }}</span>
+                    {# Logout form: uses POST for security (CSRF-protected) #}
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}  {# CSRF token: prevents cross-site request forgery attacks #}
+                        <button type="submit" class="nav-logout">Log out</button>
+                    </form>
+                {% else %}
+                    {# Anonymous user sees: Log in and Sign up links #}
+                    <a href="{% url 'login' %}">Log in</a>
+                    <a href="{% url 'register' %}">Sign up</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {# Main content area: each page's specific content goes here via {% block content %} #}
+    <main class="container" id="main">
+        {# Display Django flash messages (success, error, etc.) as styled alert boxes #}
+        {% if messages %}
+            {% for message in messages %}
+                {# message.tags provides CSS class like "success", "error" for styling #}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {# Content block: child templates override this with their page-specific content #}
+        {% block content %}{% endblock %}
+    </main>
+
+    {# Page footer with project description #}
+    <footer class="footer">
+        <p>CropGuard predicts crop disease risk from soil and climate readings. Built with Django and scikit-learn.</p>
+    </footer>
+</body>
+</html>

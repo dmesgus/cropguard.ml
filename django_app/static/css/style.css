@@ -1,0 +1,505 @@
+/* =====================================================================
+   CropGuard — "Field Ledger" theme
+
+   Design inspired by agricultural field notebooks and lab sample sheets.
+   Dark loam background, harvest-gold accent, monospace figures for
+   anything that reads like an instrument or lab value.
+   ====================================================================== */
+
+/* ===== CSS Custom Properties (variables) ===== */
+/* These are reusable values defined once and referenced throughout the stylesheet.
+   Changing a variable here updates every element that uses it. */
+:root {
+    /* --- Background and surface colors --- */
+    --bg: #1E2118;             /* Main page background: very dark green-brown (like rich soil) */
+    --panel: #262A1D;          /* Card/panel background: slightly lighter dark green */
+    --panel-line: #3B4130;     /* Borders and dividers: muted olive-green line */
+
+    /* --- Text colors --- */
+    --ink: #ECE6D4;            /* Primary text: warm off-white (parchment-like) */
+    --ink-dim: #9B9578;        /* Secondary/muted text: faded gold-brown */
+
+    /* --- Accent colors (agricultural palette) --- */
+    --gold: #CC9A2E;           /* Primary accent: harvest gold (buttons, links, highlights) */
+    --gold-bright: #E3B94A;    /* Brighter gold for hover states and emphasis */
+    --leaf: #7C9B5A;           /* Green: used for "Low risk" indicators */
+    --leaf-bg: #24301F;        /* Green background tint for low-risk badges */
+    --amber: #C98A2E;          /* Amber/orange: used for "Medium risk" indicators */
+    --amber-bg: #332A19;       /* Amber background tint for medium-risk badges */
+    --clay: #C15A3E;           /* Red-orange (clay): used for "High risk" indicators */
+    --clay-bg: #35211B;        /* Red background tint for high-risk badges */
+
+    /* --- Typography --- */
+    --font-display: "Fraunces", Georgia, serif;        /* Serif font for headings and brand */
+    --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;  /* Monospace for data values */
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif; /* Sans-serif for body text */
+}
+
+/* ===== Global reset ===== */
+/* Universal box-sizing: borders and padding are included in element widths,
+   not added on top. This makes layout math much simpler. */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== Body ===== */
+body {
+    font-family: var(--font-body);    /* Use the Inter sans-serif font */
+    background: var(--bg);             /* Dark soil background color */
+    color: var(--ink);                 /* Warm off-white text */
+    line-height: 1.55;                 /* Comfortable reading line height */
+}
+
+/* ===== Accessibility: Skip-to-content link ===== */
+/* Hidden off-screen by default. When focused via keyboard (Tab key),
+   it slides into view at the top-left corner for screen reader users. */
+.skip-link {
+    position: absolute;
+    left: -999px;       /* Off-screen to the left (hidden) */
+    top: 0;
+    background: var(--gold);    /* Gold background for visibility */
+    color: #1E2118;             /* Dark text on gold background */
+    padding: 8px 14px;
+    z-index: 100;               /* Above all other elements */
+}
+.skip-link:focus { left: 12px; top: 12px; }  /* Slide into view on keyboard focus */
+
+/* Links: inherit text color from parent by default */
+a { color: inherit; }
+
+/* ===== Focus indicators for keyboard navigation ===== */
+/* Gold outline appears around focused elements when using keyboard (Tab) */
+:focus-visible {
+    outline: 2px solid var(--gold-bright);
+    outline-offset: 2px;
+}
+
+/* ===== Navigation bar ===== */
+.navbar {
+    border-bottom: 1px solid var(--panel-line);  /* Subtle bottom border separator */
+    padding: 18px 0;                             /* Vertical spacing */
+}
+.nav-inner {
+    max-width: 1040px;         /* Centered container with max width */
+    margin: 0 auto;            /* Center horizontally */
+    display: flex;             /* Flexbox for horizontal layout */
+    justify-content: space-between;  /* Brand on left, links on right */
+    align-items: center;       /* Vertically center items */
+    padding: 0 24px;           /* Side padding */
+}
+
+/* Brand/logo: leaf icon + "CropGuard" text */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;              /* Space between SVG icon and text */
+    text-decoration: none;  /* No underline on the brand link */
+}
+.brand-word {
+    font-family: var(--font-display);   /* Serif font for brand name */
+    font-style: italic;                  /* Italic for elegance */
+    font-weight: 500;                    /* Medium weight */
+    font-size: 21px;
+    color: var(--ink);
+}
+
+/* Navigation links container */
+.nav-links { display: flex; gap: 28px; }  /* Horizontal row with spacing */
+.nav-links a {
+    color: var(--ink-dim);         /* Muted text color for nav links */
+    text-decoration: none;         /* No underlines */
+    font-size: 14px;               /* Slightly smaller than body text */
+}
+.nav-links a:hover { color: var(--gold-bright); }  /* Gold highlight on hover */
+
+/* Username display in nav */
+.nav-user {
+    color: var(--gold-bright);          /* Bright gold for emphasis */
+    font-family: var(--font-mono);      /* Monospace for "data" feel */
+    font-size: 13px;
+}
+.nav-links form { display: inline; }  /* Keep logout form inline with links */
+.nav-logout {
+    background: none;           /* No background */
+    border: none;               /* No border */
+    color: var(--ink-dim);      /* Muted text like other nav links */
+    font-family: inherit;       /* Inherit from parent */
+    font-size: 14px;
+    cursor: pointer;            /* Pointer cursor on hover */
+    padding: 0;
+}
+.nav-logout:hover { color: var(--clay); }  /* Red on hover to indicate destructive action */
+
+/* ===== Main content container ===== */
+.container {
+    max-width: 1040px;
+    margin: 0 auto;          /* Center horizontally */
+    padding: 40px 24px 20px; /* Top/bottom and side padding */
+}
+
+/* ===== Hero section (dashboard top area) ===== */
+/* Two-column grid: headline text on left, last-reading ticket on right */
+.hero {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;  /* Left column 1.5x wider than right */
+    gap: 28px;                          /* Space between columns */
+    align-items: end;                   /* Align items at the bottom of their grid cells */
+    margin-bottom: 40px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--panel-line);  /* Divider below hero */
+}
+.hero-text h1 {
+    font-family: var(--font-display);   /* Serif display font */
+    font-weight: 500;
+    font-size: 40px;                    /* Large headline */
+    line-height: 1.12;                  /* Tight line height for display text */
+    color: var(--ink);
+    margin-bottom: 14px;
+}
+.hero-text p {
+    color: var(--ink-dim);   /* Muted subtitle text */
+    max-width: 46ch;         /* Limit width to ~46 characters for readability */
+    font-size: 15px;
+}
+
+/* "Ticket" card showing the most recent reading */
+.hero-ticket {
+    background: var(--panel);           /* Dark panel background */
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;                 /* Slight rounding */
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;             /* Stack items vertically */
+    gap: 6px;                           /* Small space between ticket elements */
+    position: relative;                 /* Needed for the ::before pseudo-element */
+}
+/* Decorative circle notch on the left edge (looks like a punched receipt ticket) */
+.hero-ticket::before {
+    content: "";
+    position: absolute;
+    left: -6px;                         /* Half outside the card edge */
+    top: 50%;                           /* Vertically centered */
+    width: 12px;
+    height: 12px;
+    background: var(--bg);              /* Matches page background (creates the "punch" illusion) */
+    border-radius: 50%;                 /* Circular shape */
+    transform: translateY(-50%);        /* Center the circle vertically */
+    border-right: 1px solid var(--panel-line);  /* Right border to complete the circle edge */
+}
+.ticket-eyebrow {
+    font-size: 12px;           /* Small label text */
+    color: var(--ink-dim);
+}
+.ticket-crop {
+    font-family: var(--font-display);  /* Serif font for crop name */
+    font-size: 20px;
+    color: var(--ink);
+}
+.ticket-time {
+    font-family: var(--font-mono);    /* Monospace for timestamp */
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+
+/* Responsive: stack hero columns on mobile */
+@media (max-width: 800px) {
+    .hero { grid-template-columns: 1fr; }     /* Single column */
+    .hero-text h1 { font-size: 32px; }        /* Smaller headline on mobile */
+}
+
+/* ===== Ledger / two-column layout (form + recent samples) ===== */
+.ledger-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;  /* Form column wider than samples column */
+    gap: 24px;
+}
+/* Stack columns on mobile */
+@media (max-width: 800px) { .ledger-grid { grid-template-columns: 1fr; } }
+
+/* Panel: generic card container with border and padding */
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 26px;
+    margin-bottom: 20px;
+}
+/* Flush panel: no internal padding (used for tables that fill edge-to-edge) */
+.panel--flush { padding: 0; overflow: hidden; }
+.panel h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 19px;
+    color: var(--ink);
+    margin-bottom: 18px;
+}
+
+/* ===== Form "sheet" layout ===== */
+/* Label-left / input-right rows divided by dashed hairlines,
+   designed to look like a field sample intake form (not a typical web form). */
+.sheet { display: flex; flex-direction: column; }
+.sheet-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;  /* Two equal columns: label | input */
+    gap: 14px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--panel-line);  /* Dashed separator between rows */
+}
+.sheet-row:last-child { border-bottom: none; }  /* No border on the last row */
+.sheet-row label {
+    font-size: 13px;
+    color: var(--ink-dim);
+}
+/* Form input and select styling */
+.sheet-row input,
+.sheet-row select {
+    font-family: var(--font-mono);     /* Monospace for data entry fields */
+    font-size: 14px;
+    background: var(--bg);             /* Dark background matching page */
+    color: var(--ink);                 /* Light text */
+    border: 1px solid var(--panel-line);
+    border-radius: 3px;
+    padding: 8px 10px;
+    width: 100%;
+}
+/* Select dropdown uses body font (not monospace) for readability */
+.sheet-row select { font-family: var(--font-body); }
+/* Gold border on focus (active input) */
+.sheet-row input:focus, .sheet-row select:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+/* Validation error text spans full width of the grid row */
+.field-error { grid-column: 1 / -1; color: var(--clay); font-size: 12px; }
+
+/* Stack form fields vertically on small screens */
+@media (max-width: 600px) {
+    .sheet-row { grid-template-columns: 1fr; gap: 6px; }
+}
+
+/* ===== Primary action button ===== */
+.btn-primary {
+    display: inline-block;
+    margin-top: 20px;
+    background: var(--gold);            /* Harvest gold background */
+    color: #1E2118;                     /* Dark text (high contrast on gold) */
+    border: none;
+    padding: 12px 24px;
+    border-radius: 3px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn-primary:hover { background: var(--gold-bright); }  /* Brighter gold on hover */
+
+/* ===== Recent samples list (dashboard sidebar) ===== */
+.log-list { display: flex; flex-direction: column; }  /* Stack entries vertically */
+.log-entry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0 10px 12px;
+    border-left: 3px solid var(--panel-line);  /* Left border (colored by risk level) */
+    border-bottom: 1px solid var(--panel-line);  /* Bottom separator */
+    font-size: 14px;
+}
+.log-entry:last-child { border-bottom: none; }  /* No border on last entry */
+/* Risk-level-specific left border colors */
+.log-entry--low { border-left-color: var(--leaf); }     /* Green for Low risk */
+.log-entry--medium { border-left-color: var(--amber); }  /* Amber for Medium risk */
+.log-entry--high { border-left-color: var(--clay); }     /* Red for High risk */
+.log-crop { flex: 1; }  /* Crop name takes up remaining space */
+.log-time { font-family: var(--font-mono); font-size: 12px; color: var(--ink-dim); }
+
+/* Utility classes */
+.muted { color: var(--ink-dim); font-size: 13px; }       /* Muted/dimmed text */
+.link {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--gold);                 /* Gold link color */
+    text-decoration: underline;
+    text-underline-offset: 3px;        /* Space between text and underline */
+}
+
+/* ===== Risk level badges ===== */
+/* Small inline labels for Low/Medium/High with color-coded backgrounds */
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+/* Each risk level gets its own color scheme (background, text, border) */
+.badge-low    { background: var(--leaf-bg);  color: var(--leaf);  border-color: var(--leaf); }   /* Green */
+.badge-medium { background: var(--amber-bg); color: var(--amber); border-color: var(--amber); }  /* Amber */
+.badge-high   { background: var(--clay-bg);  color: var(--clay);  border-color: var(--clay); }   /* Red */
+
+/* ===== Field report / result page ===== */
+/* "Slip" card: centered result card resembling a field receipt or lab report */
+.slip {
+    max-width: 640px;       /* Narrower than full width for readability */
+    margin: 0 auto;         /* Center horizontally */
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    overflow: hidden;       /* Clip the stamp animation inside the card */
+}
+/* Header with "Field report" title and record number */
+.slip-head {
+    display: flex;
+    justify-content: space-between;   /* Title left, number right */
+    align-items: baseline;            /* Align text at the baseline */
+    padding: 22px 28px;
+    border-bottom: 1px dashed var(--panel-line);  /* Dashed divider */
+}
+.slip-head h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 22px;
+}
+.slip-number { font-family: var(--font-mono); font-size: 13px; color: var(--ink-dim); }
+.slip-body { padding: 28px; }
+
+/* ===== Circular risk stamp ===== */
+/* A large circular badge showing the risk level, styled like a rubber stamp */
+.stamp-row { display: flex; align-items: center; gap: 24px; margin-bottom: 26px; flex-wrap: wrap; }
+
+.stamp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;                  /* Perfect circle */
+    border: 3px solid var(--leaf);       /* Green border by default */
+    color: var(--leaf);
+    transform: rotate(-4deg);            /* Slight rotation for a "hand-stamped" look */
+    animation: stamp-settle 320ms ease-out;  /* Pop-in animation on page load */
+    flex-shrink: 0;                      /* Don't shrink in flex layout */
+}
+/* Risk-level-specific stamp colors */
+.stamp--low { border-color: var(--leaf); color: var(--leaf); }       /* Green */
+.stamp--medium { border-color: var(--amber); color: var(--amber); }  /* Amber */
+.stamp--high { border-color: var(--clay); color: var(--clay); }      /* Red */
+/* Neutral stamp (used on history page for summary stats): no rotation, standard shape */
+.stamp--neutral { border-color: var(--ink-dim); color: var(--ink); transform: none; position: static; }
+.stamp-label { font-family: var(--font-display); font-size: 20px; font-weight: 600; }
+.stamp-sub { font-size: 11px; color: inherit; opacity: 0.85; }
+
+/* Stamp pop-in animation: scales from 0.85 to 1.0 while fading in */
+@keyframes stamp-settle {
+    from { transform: rotate(-4deg) scale(0.85); opacity: 0; }
+    to   { transform: rotate(-4deg) scale(1);    opacity: 1; }
+}
+/* Respect user's reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .stamp { animation: none; }
+}
+
+/* Metadata items next to the stamp (crop name, confidence) */
+.stamp-meta { display: flex; gap: 32px; }
+.meta-item { display: flex; flex-direction: column; gap: 4px; }
+.meta-label { font-size: 12px; color: var(--ink-dim); }    /* Small gray label */
+.meta-value { font-family: var(--font-display); font-size: 19px; }  /* Serif value text */
+.meta-value.mono { font-family: var(--font-mono); }  /* Override to monospace for numbers */
+
+/* Advisory box: gold left border highlights actionable advice */
+.advisory {
+    background: var(--bg);              /* Slightly different background from panel */
+    border-left: 3px solid var(--gold);  /* Gold left accent bar */
+    padding: 14px 18px;
+    border-radius: 3px;
+    margin-bottom: 26px;
+}
+.advisory h3 { font-size: 13px; margin-bottom: 6px; color: var(--gold-bright); font-weight: 600; }
+.advisory p { font-size: 14px; color: var(--ink); }
+
+/* Reading details: list of input values */
+.reading h3 { font-size: 13px; margin-bottom: 10px; color: var(--ink-dim); font-weight: 600; }
+.reading-grid { display: flex; flex-direction: column; margin-bottom: 24px; }
+.reading-item {
+    display: flex;
+    justify-content: space-between;   /* Label left, value right */
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--panel-line);  /* Dashed row separators */
+    font-size: 14px;
+}
+.reading-item:last-child { border-bottom: none; }
+.reading-item .mono { color: var(--ink-dim); }  /* Dim the values slightly */
+
+/* ===== History / sample log page ===== */
+.log-header { margin-bottom: 24px; }
+.log-header h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 30px;
+    margin-bottom: 6px;
+}
+.log-header p { color: var(--ink-dim); font-size: 14px; }
+
+/* Summary statistics row (total count + high-risk count) */
+.stats-row { display: flex; gap: 20px; margin-bottom: 28px; }
+
+/* ===== Ledger table (history page) ===== */
+.ledger-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ledger-table th, .ledger-table td {
+    padding: 12px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--panel-line);
+}
+/* Table header: slightly darker background, smaller text */
+.ledger-table th {
+    font-size: 12px;
+    color: var(--ink-dim);
+    font-weight: 600;
+    background: rgba(0,0,0,0.15);   /* Semi-transparent dark overlay */
+}
+/* Row hover: subtle gold tint on mouseover */
+.ledger-table tbody tr:hover { background: rgba(204,154,46,0.06); }
+.mono { font-family: var(--font-mono); }  /* Utility: apply monospace font to any element */
+
+/* ===== Auth pages (login / register) ===== */
+.auth-card {
+    max-width: 460px;           /* Narrow centered card */
+    margin: 24px auto;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 32px;
+}
+.auth-card h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 28px;
+    margin-bottom: 6px;
+}
+.auth-card .muted { margin-bottom: 20px; }
+.auth-switch { margin-top: 20px; }      /* "No account yet?" / "Already registered?" */
+.field-help { grid-column: 1 / -1; color: var(--ink-dim); font-size: 12px; }  /* Help text spans full width */
+
+/* ===== Alerts / flash messages ===== */
+/* Displayed at the top of the page for success/error notifications */
+.alert {
+    padding: 12px 16px;
+    border-radius: 3px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    border: 1px solid var(--clay);      /* Red border */
+    background: var(--clay-bg);         /* Dark red background */
+    color: var(--clay);                 /* Red text */
+}
+
+/* ===== Footer ===== */
+.footer {
+    text-align: center;
+    padding: 32px 24px;
+    color: var(--ink-dim);       /* Muted text */
+    font-size: 12px;            /* Small text */
+    border-top: 1px solid var(--panel-line);  /* Top border separator */
+    margin-top: 20px;
+}

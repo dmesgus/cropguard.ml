@@ -1,0 +1,25 @@
+# CropGuard ML Django Application — Python package dependencies
+
+# Django >= 5.0: The web framework powering the application.
+# Provides URL routing, ORM (database), authentication, template engine, admin panel.
+Django>=5.0
+
+# scikit-learn >= 1.5: Machine learning library.
+# Used for training RandomForestClassifier models (crop + disease risk prediction),
+# StandardScaler (feature normalization), LabelEncoder (label encoding), and evaluation metrics.
+scikit-learn>=1.5
+
+# pandas >= 2.2: Data manipulation library.
+# Used for loading and processing the CSV dataset (dataset.csv) during model training,
+# and for DataFrame operations in generate_dataset.py.
+pandas>=2.2
+
+# numpy >= 1.26: Numerical computing library.
+# Provides array operations and random number generation (used by scikit-learn internally,
+# and directly in generate_dataset.py and predict.py for array manipulation).
+numpy>=1.26
+
+# joblib >= 1.4: Model serialization library.
+# Used to save trained ML models and preprocessors to disk as .pkl files (pickle format),
+# and to load them at runtime in the Django web app for predictions.
+joblib>=1.4

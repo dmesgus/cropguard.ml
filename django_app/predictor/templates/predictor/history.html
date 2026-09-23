@@ -1,0 +1,69 @@
+{# Inherit the base template layout #}
+{% extends "predictor/base.html" %}
+{# Set the browser tab title #}
+{% block title %}Sample log · CropGuard{% endblock %}
+
+{% block content %}
+{# Page header with title and subtitle #}
+<div class="log-header">
+    <h1>Sample log</h1>
+    <p>Every reading you've submitted, most recent first.</p>
+</div>
+
+{# ===== Summary statistics row: two stamp-style cards ===== #}
+<div class="stats-row">
+    {# Neutral-colored stamp showing total number of predictions logged #}
+    <div class="stamp stamp--neutral">
+        <span class="stamp-label mono">{{ total }}</span>
+        <span class="stamp-sub">samples logged</span>
+    </div>
+    {# Red-colored stamp showing count of high-risk predictions #}
+    <div class="stamp stamp--high">
+        <span class="stamp-label mono">{{ high_risk_count }}</span>
+        <span class="stamp-sub">flagged high risk</span>
+    </div>
+</div>
+
+{# ===== Full history table: every prediction ever submitted ===== #}
+{# panel--flush class removes internal padding for the table to fill the panel edge-to-edge #}
+<div class="panel panel--flush">
+    <table class="ledger-table">
+        <thead>
+            <tr>
+                {# Column headers for the prediction history table #}
+                <th>Date</th>
+                <th>Crop</th>
+                <th>pH</th>
+                <th>Humidity</th>
+                <th>Rainfall</th>
+                <th>Risk</th>
+                <th>Confidence</th>
+            </tr>
+        </thead>
+        <tbody>
+            {# Iterate over all prediction records for the current user #}
+            {% for r in records %}
+            <tr>
+                {# Date formatted as "05 Sep 2026, 14:30" with monospace font #}
+                <td class="mono">{{ r.created_at|date:"d M Y, H:i" }}</td>
+                {# Crop name with title case (first letter capitalized) #}
+                <td>{{ r.recommended_crop|default:r.selected_crop|title }}</td>
+                {# Soil pH value in monospace #}
+                <td class="mono">{{ r.ph }}</td>
+                {# Humidity percentage #}
+                <td class="mono">{{ r.humidity }}%</td>
+                {# Rainfall in mm #}
+                <td class="mono">{{ r.rainfall }}mm</td>
+                {# Risk badge: colored inline badge (green/amber/red) based on risk level #}
+                <td><span class="badge badge-{{ r.disease_risk|lower }}">{{ r.disease_risk }}</span></td>
+                {# Model confidence percentage #}
+                <td class="mono">{{ r.risk_confidence }}%</td>
+            </tr>
+            {% empty %}
+            {# Shown when there are no records at all (empty state) #}
+            <tr><td colspan="7" class="muted">No samples yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
